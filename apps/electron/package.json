@@ -40,14 +40,26 @@
         "directories": {
             "output": "release"
         },
+        "publish": [
+            "github"
+        ],
         "mac": {
-            "target": "dmg"
+            "target": "dmg",
+            "hardenedRuntime": true,
+            "gatekeeperAssess": false,
+            "entitlements": "build/entitlements.mac.plist",
+            "entitlementsInherit": "build/entitlements.mac.plist"
+        },
+        "dmg": {
+            "sign": false
         },
         "win": {
-            "target": "nsis"
+            "target": "nsis",
+            "verifyUpdateCodeSignature": false
         },
         "linux": {
-            "target": "AppImage"
+            "target": "AppImage",
+            "category": "Development"
         }
     },
     "keywords": [
@@ -59,6 +71,7 @@
     "devDependencies": {
         "electron": "^34.0.0",
         "electron-builder": "^25.1.8",
+        "electron-updater": "^6.1.7",
         "typescript": "^5.7.3",
         "vite": "^6.0.7"
     }

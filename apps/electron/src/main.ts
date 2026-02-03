@@ -1,7 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { ChildProcess } from 'child_process';
+import { ChildProcess, fork } from 'child_process';
 import crypto from 'crypto';
+import { autoUpdater } from 'electron-updater';
 
 const isDev = process.env.NODE_ENV === 'development';
 const API_KEY = crypto.randomBytes(32).toString('hex');
@@ -23,13 +24,7 @@ function createWindow() {
         },
     });
 
-    // Load the UI - in dev, maybe localhost, in prod, the static build.
-    // For now, assuming the backend serves the UI at localhost:PORT
     const uiUrl = `http://localhost:${PORT}/`;
-
-    // We can add a secure header to the loadURL request if supported, or rely on the backend validation 
-    // checking a custom header we send from the renderer via preload.
-
     mainWindow.loadURL(uiUrl);
 
     mainWindow.once('ready-to-show', () => {
@@ -41,18 +36,17 @@ function createWindow() {
     });
 }
 
+function setupAutoUpdater() {
+    autoUpdater.logger = console;
+    autoUpdater.checkForUpdatesAndNotify();
+}
+
 async function startBackend() {
-    const rootDir = path.resolve(__dirname, '../../..'); // apps/electron/dist -> apps/electron -> root
+    const rootDir = path.resolve(__dirname, '../../..');
     const scriptPath = path.join(rootDir, 'openclaw.mjs');
 
     console.log(`Starting backend from: ${scriptPath}`);
 
-    /*
-     * Use fork() to spawn the backend using the Electron binary itself as the Node.js runtime.
-     * This ensures we don't depend on the user having Node.js installed.
-     */
-    // fork uses IPC channel by default, but we can silence it or use it for logging if we want.
-    // modifying options to include stdio pipe if we want to read stdout.
     backendProcess = fork(scriptPath, [], {
         cwd: rootDir,
         env: {
@@ -60,7 +54,7 @@ async function startBackend() {
             PORT: PORT.toString(),
             ELECTRON_API_KEY: API_KEY,
             OPENCLAW_HEADLESS: 'true',
-            ELECTRON_RUN_AS_NODE: '1', // Ensure Electron runs this as a plain Node script
+            ELECTRON_RUN_AS_NODE: '1',
         },
         stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     });
@@ -88,9 +82,11 @@ async function startBackend() {
 
 app.whenReady().then(() => {
     startBackend();
-    // Wait a bit for backend to be ready? Or rely on retry in renderer?
-    // Ideally backend signals readiness. specific solution: wait a static time or poll.
     setTimeout(createWindow, 3000);
+
+    if (!isDev) {
+        setupAutoUpdater();
+    }
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
