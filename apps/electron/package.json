@@ -1,0 +1,65 @@
+{
+    "name": "openclaw-desktop",
+    "productName": "OpenClaw",
+    "version": "1.0.0",
+    "description": "Secure desktop wrapper for OpenClaw",
+    "main": "dist/main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "tsc",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder"
+    },
+    "build": {
+        "appId": "ai.openclaw.desktop",
+        "productName": "OpenClaw",
+        "files": [
+            "dist/**/*",
+            "package.json"
+        ],
+        "extraResources": [
+            {
+                "from": "../../dist",
+                "to": "backend/dist",
+                "filter": [
+                    "**/*"
+                ]
+            },
+            {
+                "from": "../../openclaw.mjs",
+                "to": "backend/openclaw.mjs"
+            },
+            {
+                "from": "../../node_modules",
+                "to": "backend/node_modules",
+                "filter": [
+                    "**/*"
+                ]
+            }
+        ],
+        "directories": {
+            "output": "release"
+        },
+        "mac": {
+            "target": "dmg"
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "linux": {
+            "target": "AppImage"
+        }
+    },
+    "keywords": [
+        "openclaw",
+        "electron"
+    ],
+    "author": "OpenClaw Team",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^34.0.0",
+        "electron-builder": "^25.1.8",
+        "typescript": "^5.7.3",
+        "vite": "^6.0.7"
+    }
+}
