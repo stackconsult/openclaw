@@ -69,9 +69,11 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          # Publish only on tag, otherwise skip
+          PUBLISH_FLAG: ${{ startsWith(github.ref, 'refs/tags/v') && '--publish always' || '--publish never' }}
         run: |
           pnpm build
-          pnpm electron-builder ${{ matrix.publish_args }} --publish never
+          pnpm electron-builder ${{ matrix.publish_args }} $PUBLISH_FLAG
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
