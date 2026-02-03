@@ -47,8 +47,16 @@ jobs:
           corepack prepare pnpm@10.23.0 --activate
           pnpm -v
 
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+          project_id: 'default' # Placeholder, user can update later if needed
+
 
       - name: Build Backend & UI
         run: pnpm build
